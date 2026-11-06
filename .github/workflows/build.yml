@@ -34,7 +34,7 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - name: Configure (Universal: Intel + Apple Silicon)
+      - name: "Configure (Universal - Intel + Apple Silicon)"
         run: cmake -B build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
       - name: Build (VST3 + AU + AAX + Standalone)
         run: cmake --build build --config Release --parallel 4
