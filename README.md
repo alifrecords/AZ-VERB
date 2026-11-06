@@ -70,7 +70,7 @@ Tahlil butunlay plagin ichida bajariladi: internet va bulut kerak emas.
 ### O'z kompyuteringizda
 - **Windows:** Visual Studio 2022 (C++), CMake.
   ```
-  cmake -B build -G "Visual Studio 17 2022" -A x64
+  cmake -B build -A x64
   cmake --build build --config Release
   ```
 - **macOS:** Xcode, CMake.
