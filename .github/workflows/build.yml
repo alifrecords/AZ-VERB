@@ -51,7 +51,7 @@ jobs:
         with: { name: AZ-VERB-macOS, path: AZ-VERB-macOS.zip }
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     needs: [ windows, macos ]
     runs-on: ubuntu-latest
     permissions: { contents: write }
@@ -60,6 +60,13 @@ jobs:
       - run: cd AZ-VERB-Windows && zip -r ../AZ-VERB-Windows.zip . && cd ..
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.0.0' }}
+          target_commitish: ${{ github.sha }}
+          name: AZ VERB ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.0.0' }}
+          body: |
+            AZ VERB - Smart Vocal Reverb (Azimxodjayev Music)
+            Windows: AZ-VERB-Windows.zip ichida Setup.exe (VST3 + AAX + Standalone)
+            macOS: AZ-VERB-macOS.zip (VST3 + AU + AAX + App, Intel va Apple Silicon) - ORNATISH.txt ni o'qing
           files: |
             AZ-VERB-Windows.zip
             AZ-VERB-macOS/AZ-VERB-macOS.zip
