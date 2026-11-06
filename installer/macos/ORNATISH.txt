@@ -1,0 +1,13 @@
+AZ VERB — macOS'ga o'rnatish
+=============================
+
+1) Fayllarni nusxalang:
+   AZ VERB.vst3        ->  /Library/Audio/Plug-Ins/VST3/
+   AZ VERB.component   ->  /Library/Audio/Plug-Ins/Components/     (Logic, GarageBand)
+   AZ VERB.aaxplugin   ->  /Library/Application Support/Avid/Audio/Plug-Ins/   (Pro Tools)
+
+2) Plagin hali Apple tomonidan imzolanmagan, shuning uchun Terminal'da bir marta:
+   sudo xattr -dr com.apple.quarantine "/Library/Audio/Plug-Ins/VST3/AZ VERB.vst3"
+   sudo xattr -dr com.apple.quarantine "/Library/Audio/Plug-Ins/Components/AZ VERB.component"
+
+3) DAW'ni qayta oching va plaginlarni qayta skanerlang.

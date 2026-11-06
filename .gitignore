@@ -1,0 +1,11 @@
+build/
+build-*/
+JUCE
+tests/engine_test
+tests/t2*
+tests/de*
+tests/feat_test
+tests/dbg*
+tests/*.wav
+*.png
+!docs/*.png
