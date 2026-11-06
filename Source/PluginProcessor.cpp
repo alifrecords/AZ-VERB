@@ -244,6 +244,15 @@ void AZVerbProcessor::setStateInformation (const void* data, int size)
             auto vt = juce::ValueTree::fromXml (*xml);
             currentPreset = (int) vt.getProperty ("preset", 0);
             apvts.replaceState (vt);
+            // Har bir parametrni daraxtdagi qiymatga majburan o'rnatish
+            // (bool parametrlar oraliq qiymatda qolib ketmasligi uchun)
+            for (auto* prm : getParameters())
+                if (auto* rp = dynamic_cast<juce::RangedAudioParameter*> (prm))
+                {
+                    auto child = vt.getChildWithProperty ("id", rp->getParameterID());
+                    if (child.isValid() && child.hasProperty ("value"))
+                        rp->setValueNotifyingHost (rp->convertTo0to1 ((float) child.getProperty ("value")));
+                }
         }
 }
 

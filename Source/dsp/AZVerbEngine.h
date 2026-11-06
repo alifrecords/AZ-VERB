@@ -74,6 +74,15 @@ struct Delay
         const float c = b[(size_t) ((w - 2 - i) & mask)];
         return a + (c - a) * f;
     }
+    // 4 nuqtali Hermite: yuqori chastotalarni yo'qotmaydi (D-Verb kabi ochiq dum)
+    inline float readHermite (float d) const
+    {
+        const int i = (int) d; const float t = d - (float) i;
+        const float xm1 = b[(size_t) ((w - i) & mask)],     x0 = b[(size_t) ((w - 1 - i) & mask)];
+        const float x1  = b[(size_t) ((w - 2 - i) & mask)], x2 = b[(size_t) ((w - 3 - i) & mask)];
+        const float c1 = 0.5f * (x1 - xm1), c2 = xm1 - 2.5f * x0 + 2.0f * x1 - 0.5f * x2, c3 = 0.5f * (x2 - xm1) + 1.5f * (x0 - x1);
+        return ((c3 * t + c2) * t + c1) * t + x0;
+    }
     void clear() { std::fill (b.begin(), b.end(), 0.0f); }
 };
 
@@ -102,16 +111,16 @@ struct Params
     float size       = 0.5f;     // 0..1
     float decayS     = 2.4f;     // 0.1..20
     float diffusion  = 0.78f;    // 0..1
-    float dampHz     = 6200.0f;  // dum ichidagi HF so'nish
+    float dampHz     = 6500.0f;  // yuqori chastota so'nishi boshlanadigan nuqta
     float lowCutHz   = 180.0f;
-    float highCutHz  = 12000.0f;
-    float width      = 1.2f;     // 0..2
+    float highCutHz  = 16000.0f;
+    float width      = 1.0f;     // 0..2
     float mix        = 0.32f;    // 0..1
     bool  freeze     = false;
     bool  duck       = true;
     float duckDb     = 8.0f;     // 0..18
     // --- AZ fishkalari ---
-    float sand       = 0.45f;    // yumshoqlik / tasodifiy modulyatsiya
+    float sand       = 0.30f;    // yumshoqlik / tasodifiy modulyatsiya
     float crystal    = 0.40f;    // dum "havosi" va jilosi
     float focus      = 0.50f;    // anti-masking (vokal ustida dumni bo'shatish)
     float deEss      = 0.50f;    // reverb kirishidagi sibilyant nazorati
@@ -129,20 +138,21 @@ struct AlgoShape
     float lateLevel;
     float trim;               // algoritmlar orasida bir xil balandlik
     float loopDiff;           // liniya ichidagi diffuziya (zichlik, metallsiz dum)
+    float hfRatio;            // yuqori chastota so'nishi (1 = so'nmaydi)
 };
 
 inline AlgoShape shapeFor (Algo a)
 {
     switch (a)
     {
-        case Algo::Hall:    return { 0.85f, 2.00f, 0.30f, 1.00f, 0.78f, 0.45f, 1.00f, 1.00f, 1.00f, 1.27f, 0.50f };
-        case Algo::Church:  return { 1.30f, 2.70f, 0.38f, 1.60f, 0.70f, 0.55f, 0.70f, 0.85f, 1.00f, 1.28f, 0.45f };
-        case Algo::Plate:   return { 0.55f, 1.20f, 0.00f, 0.00f, 0.80f, 0.16f, 1.30f, 1.35f, 1.10f, 1.03f, 0.66f };
-        case Algo::Room1:   return { 0.25f, 0.62f, 0.70f, 0.45f, 0.62f, 0.18f, 0.90f, 0.95f, 0.85f, 0.70f, 0.60f };
-        case Algo::Room2:   return { 0.42f, 0.95f, 0.50f, 0.65f, 0.74f, 0.25f, 0.80f, 0.80f, 0.95f, 0.88f, 0.58f };
-        case Algo::Ambient: return { 0.70f, 1.50f, 0.00f, 0.00f, 0.80f, 0.70f, 0.55f, 0.90f, 1.00f, 1.45f, 0.62f };
+        case Algo::Hall:    return { 0.85f, 2.00f, 0.42f, 1.10f, 0.74f, 0.22f, 0.80f, 1.00f, 1.00f, 1.27f, 0.50f, 0.62f };
+        case Algo::Church:  return { 1.30f, 2.70f, 0.48f, 1.70f, 0.70f, 0.28f, 0.60f, 0.90f, 1.00f, 1.28f, 0.45f, 0.52f };
+        case Algo::Plate:   return { 0.55f, 1.20f, 0.00f, 0.00f, 0.80f, 0.08f, 1.10f, 1.30f, 1.10f, 1.03f, 0.66f, 0.80f };
+        case Algo::Room1:   return { 0.25f, 0.62f, 0.75f, 0.50f, 0.62f, 0.10f, 0.80f, 1.00f, 0.85f, 0.70f, 0.60f, 0.70f };
+        case Algo::Room2:   return { 0.42f, 0.95f, 0.58f, 0.70f, 0.72f, 0.14f, 0.70f, 0.90f, 0.95f, 0.88f, 0.58f, 0.65f };
+        case Algo::Ambient: return { 0.70f, 1.50f, 0.10f, 1.20f, 0.80f, 0.35f, 0.50f, 0.95f, 1.00f, 1.45f, 0.62f, 0.58f };
         case Algo::NonLin:  default:
-                            return { 0.40f, 0.80f, 0.00f, 0.00f, 0.78f, 0.10f, 1.00f, 1.10f, 0.00f, 1.03f, 0.0f };
+                            return { 0.40f, 0.80f, 0.00f, 0.00f, 0.78f, 0.05f, 1.00f, 1.10f, 0.00f, 1.44f, 0.00f, 1.00f };
     }
 }
 
@@ -179,6 +189,7 @@ public:
         for (int i = 0; i < 4; ++i) { apL[i].d.clear(); apR[i].d.clear(); }
         for (auto* f : allFilters()) f->reset();
         for (auto& o : damp) o.reset();
+        for (auto& o : bassX) o.reset();
         envDry.reset(); envFull.reset(); envSib.reset(); duckSm.reset();
         for (int i = 0; i < N; ++i) { curLen[i] = tgtLen[i]; modCur[i] = modTgt[i] = 0; noiseCur[i] = noiseTgt[i] = 0; }
         updateCoeffs (true);
@@ -254,8 +265,13 @@ public:
                 curLen[i] += 0.0008f * (tgtLen[i] - curLen[i]);           // SIZE silliq o'zgaradi
                 const float m = modCur[i] + modStep[i] * (float) (ctrlCounter & 15);
                 const float rd = std::clamp (curLen[i] + m, 2.0f, (float) lines[i].mask - 4.0f);
-                float v = lines[i].readFrac (rd);
-                v = loopAp[i].p (damp[i].p (v)) * fb[i];
+                float v = lines[i].readHermite (rd);
+                // 3 polosali so'nish: past (loyqalikni tozalash) / o'rta / yuqori (havo)
+                const float lowMid = damp[i].p (v);
+                const float hf = v - lowMid;
+                const float low = bassX[i].p (lowMid);
+                v = (low * gLow[i] + (lowMid - low) + hf * gHigh[i]);
+                v = loopAp[i].p (v) * fb[i];
                 out[i] = v; sum += v;
             }
             const float hh = sum * (2.0f / N);
@@ -321,7 +337,8 @@ private:
 
     Delay preL, preR, erBuf;
     Delay lines[N];
-    OnePole damp[N];
+    OnePole damp[N], bassX[N];
+    float gLow[N] {}, gHigh[N] {};
     Allpass loopAp[N];
     Allpass apL[4], apR[4]; float apMaxL[4] {}, apMaxR[4] {};
 
@@ -341,7 +358,7 @@ private:
     int erTapL[8] {}, erTapR[8] {}; float erGain[8] {}; float erLevel = 0; bool erOn = false;
     int nlTap[24] {}; float nlGain[24] {}; bool isNonLin = false;
 
-    float outTrim = 1.0f, inGain = 0.35f, lateLevel = 1.0f, crystalAir = 0.0f;
+    float rtCal = 1.06f, outTrim = 1.0f, inGain = 0.35f, lateLevel = 1.0f, crystalAir = 0.0f;
     float preTarget = 0, preSm = 0;
     float dryG = 1, wetG = 0, dryT = 1, wetT = 0;
 
@@ -357,7 +374,7 @@ private:
             if (newNoise) noiseTgt[i] = rnd[i].next();
             noiseCur[i] += 0.004f * (noiseTgt[i] - noiseCur[i]);
             const float sandAmt = p.sand;
-            const float m = modDepthS * ((1.0f - 0.6f * sandAmt) * std::sin (lfoPh[i]) + (0.35f + 1.6f * sandAmt) * noiseCur[i]);
+            const float m = modDepthS * ((1.0f - 0.5f * sandAmt) * std::sin (lfoPh[i]) + (0.25f + 1.0f * sandAmt) * noiseCur[i]);
             modCur[i] = modTgt[i];
             modTgt[i] = m;
             modStep[i] = (modTgt[i] - modCur[i]) / 16.0f;
@@ -371,9 +388,10 @@ private:
 
         // --- FDN uzunliklari va feedback ---
         const float scale = sh.sizeLo + (sh.sizeHi - sh.sizeLo) * p.size;
-        // interpolyatsiya va damping yo'qotishini kompensatsiya qilish (o'lchov asosida)
-        const float dampEff = std::min (p.dampHz * sh.dampMul, 20000.0f);
-        const float rt = std::clamp (p.decayS, 0.1f, 30.0f) * (1.12f + 0.12f * (1.0f - dampEff / 20000.0f));
+        // Hermite + shelf so'nish: RT o'rta chastotada aniq (o'lchov bo'yicha kalibrlangan)
+        const float rt = std::clamp (p.decayS, 0.1f, 30.0f) * rtCal;
+        const float hfRatio = p.freeze ? 1.0f : sh.hfRatio;    // yuqori chastota RT / asosiy RT
+        const float lfRatio = p.freeze ? 1.0f : 0.80f;         // bass biroz qisqa = toza
         for (int i = 0; i < N; ++i)
         {
             tgtLen[i] = baseMs[i] * scale * 0.001f * fs;
@@ -384,14 +402,18 @@ private:
             const float effLen = tgtLen[i] + (float) loopAp[i].len;
             const float g = std::pow (10.0f, -3.0f * (effLen / fs) / rt);
             fb[i] = p.freeze ? 1.0f : (isNonLin ? 0.0f : std::min (g, 0.9995f));
-            damp[i].setHz (p.freeze ? 22000.0f : std::min (p.dampHz * sh.dampMul, 20000.0f), fs);
+            const float lg = std::log10 (std::max (g, 1.0e-6f));          // asosiy yo'qotish (dB/20)
+            gHigh[i] = std::pow (10.0f, lg * (1.0f / hfRatio - 1.0f));
+            gLow[i]  = std::pow (10.0f, lg * (1.0f / lfRatio - 1.0f));
+            damp[i].setHz (std::min (p.dampHz * sh.dampMul, 20000.0f), fs);
+            bassX[i].setHz (220.0f, fs);
         }
         lateLevel = isNonLin ? 0.0f : sh.lateLevel * 0.55f;
         outTrim = sh.trim;
         inGain = 0.42f;
 
         // --- modulyatsiya ---
-        modDepthS = (sh.modMs * (0.5f + 0.9f * p.sand)) * 0.001f * fs;
+        modDepthS = (sh.modMs * (0.4f + 0.9f * p.sand)) * 0.001f * fs;
         modRateHz = sh.modRate;
 
         // --- kirish diffuzerlari ---

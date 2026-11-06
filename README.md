@@ -42,18 +42,40 @@ Daftar DAW'idagi D-Verb asosida qayta yozilgan, mustaqil reverb plagin. Asosiy m
 
 Tahlil butunlay plagin ichida bajariladi: internet va bulut kerak emas.
 
-## O'lchangan natijalar
+## O'lchangan natijalar (v1.1)
 
 | Sinov | Natija |
 |---|---|
 | RT60 aniqligi | ±6% |
+| Chastota bo'yicha RT (Hall, 2.5 s) | 125 Hz 2.37 · 500 Hz 2.55 · 2 kHz 2.57 · 4 kHz 2.43 · 8 kHz 2.07 s (tabiiy zal kabi) |
+| Dumdagi loyqalik (150–500 Hz ulushi) | 5.5% |
+| Dumdagi havo (6–16 kHz ulushi) | 8% |
+| Stereo korrelyatsiya (IACC) | ≈0.0: vokalni to'liq o'rab oladi, monoda yo'qotish yo'q |
 | Algoritmlar orasidagi balandlik farqi | ≤0.7 dB |
-| Hall dumining silliqligi (spektral tekislik) | 0.55 (ideal ≈ 0.56) |
-| DE-ESS | sibilyant −8…−10 dB, pastlarga 0 dB |
-| DUCK | kuylaganda −8 dB, pauzada tiklanadi |
-| CPU (48 kHz stereo) | bitta yadroning ≈0.7–1% |
+| DE-ESS | sibilyant −8…−12 dB, pastlarga 0 dB |
+| CPU (48 kHz stereo) | bitta yadroning ≈1.2% |
 | Smart Vocal (sintetik test) | F0 ±2%, sibilyant ±1%, temp ±1 BPM |
-| pluginval | strictness 10, barcha 24 test o'tdi |
+| pluginval | strictness 10, 3 xil seed, barcha testlar o'tdi |
+
+## O'zgarishlar
+
+**v1.1.0: ochiq va tabiiy tovush (D-Verb ruhida)**
+
+| Ko'rsatkich | v1.0 | v1.1 |
+|---|---|---|
+| RT 8 kHz (2.5 s sozlamada) | 0.88 s | 2.07 s |
+| Loyqalik ulushi | 11.9% | 5.5% |
+| Aniqlik (2–6 kHz) | 28% | 47% |
+| Havo (6–16 kHz) | 0.2% | 8% |
+| Dum spektr markazi | 1.57 kHz | 2.86 kHz |
+| Stereo korrelyatsiya | −0.18 (fazasi buzuq) | 0.0 |
+
+- Lowpass so'nish o'rniga 3 polosali shelf so'nish: bass biroz qisqa, o'rtalar tekis, yuqorilar yumshoq so'nadi.
+- Hermite interpolyatsiya: modulyatsiyada yuqori chastotalar yo'qolmaydi.
+- Modulyatsiya kamaytirildi: chorus loyqaligi yo'q, pitch toza.
+- Erta aks-sadolar kuchaytirildi (Hall, Church, Room): vokal atrofida aniq fazo seziladi.
+- WIDTH standarti 100% (maksimal o'rab olish, mono-xavfsiz); presetlar yangilandi.
+- Tuzatildi: SYNC, FREEZE va DUCK DAW loyihasini ochganda har doim to'g'ri tiklanadi.
 
 ---
 
